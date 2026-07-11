@@ -1,33 +1,36 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Button } from './src/components/Button';
+import { styles } from './src/styles/app.styles';
 
 export default function App() {
   return (
-    <View>
 
-      <StatusBar style="light" />
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.Os === 'ios' ? 'padding' : 'height'}>
 
-      <View>
-        <Text>Conversor de Moedas</Text>
-        <Text>
-          Converta valores entre diferentes moedas
-        </Text>
+      <ScrollView style = {styles.scrollView}>
 
-      </View>
-      <View>
-        <Text>De:</Text>
-        
-      </View>
+        <View style = {styles.content}>
+          <StatusBar style="light" />
 
-    </View>
+          <View style = {styles.header}>
+            <Text style = {styles.title}>Conversor de Moedas</Text>
+            <Text style = {styles.subTitle}>
+              Converta valores entre diferentes moedas
+            </Text>
+
+          </View>
+          <View style = {styles.card}>
+            <Text style = {styles.label}>De:</Text>
+            <Button variant="primary"></Button>
+
+          </View>
+
+        </View>
+      </ScrollView>
+
+    </KeyboardAvoidingView>
+
+
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
