@@ -2,7 +2,7 @@ import { View, Text, TextInput } from 'react-native';
 import { styles } from './styles';
 
 
-export function Input(value, onChangeText, label) {
+export function Input({ value, onChangeText, label }) {
 
     return (
 

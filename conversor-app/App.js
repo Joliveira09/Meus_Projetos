@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button } from './src/components/Button';
 import { styles } from './src/styles/app.styles';
 import { currencies } from './src/constants/currencies';
@@ -7,6 +7,7 @@ import { Input } from './src/components/Button/input';
 import { ResultCard } from './src/components/Button/resultCard';
 import { exchangeRateApi } from './src/constants/services/API';
 import { useState } from 'react';
+import { convertCurrency } from './src/utils/convertCurrency';
 
 export default function App() {
 
@@ -15,14 +16,37 @@ export default function App() {
   const [toCurrency, setToCurrency] = useState('BRL');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
-  const [exchangerate, setExchangeRate] = useState(null);
+  const [exchangeRate, setExchangeRate] = useState(null);
 
   async function fetchExchangeRate() {
-    const data = await exchangeRateApi(fromCurrency);
-    const rate = data.rates[toCurrency];
 
-    console.log(rate * amount);
+    try {
+      setLoading(true);
 
+
+      if (!amount) return;
+
+      const data = await exchangeRateApi(fromCurrency);
+      const rate = data.rates[toCurrency];
+      setExchangeRate(rate);
+      const convertedAmount = convertCurrency(amount, rate);
+
+
+      setResult(convertedAmount);
+
+    }
+    catch(err){
+      alert("Erro, tente novamente")
+    }
+    finally {
+      setLoading(false);
+    }
+  }
+
+  function swapCurrency(){
+    setFromCurrency(toCurrency);
+    setToCurrency(fromCurrency);
+    setResult('');
   }
 
   return (
@@ -46,17 +70,16 @@ export default function App() {
             <View style={styles.currencyGrid}>
               {currencies.map(currency => (
 
-                <Button variant='primary' key={currency.code} currency={currency} onPress= {() => setFromCurrency(currency.code)} isSelected = { fromCurrency === currency.code} />
+                <Button variant='primary' key={currency.code} currency={currency} onPress={() => setFromCurrency(currency.code)} isSelected={fromCurrency === currency.code} />
 
               ))}
 
 
 
             </View>
+            <Input label="Valor: " value={amount} onChangeText={setAmount} />
 
-            <Input label="Valor: " value = {amount} onChangeText = {setAmount} />
-
-            <TouchableOpacity style={styles.swapButton}>
+            <TouchableOpacity style={styles.swapButton} onPress={swapCurrency}>
               <Text style={styles.swapButtonText}>
                 ↑↓
               </Text>
@@ -66,19 +89,32 @@ export default function App() {
             <View style={styles.currencyGrid}>
               {currencies.map(currency => (
 
-                <Button variant='secondary' key={currency.code} currency={currency} onPress= {() => setToCurrency(currency.code)} isSelected = {toCurrency === currency.code} />
+                <Button variant='secondary' key={currency.code} currency={currency} onPress={() => setToCurrency(currency.code)} isSelected={toCurrency === currency.code} />
 
               ))}
             </View>
           </View>
 
-          <TouchableOpacity style={styles.convertButton} onPress={fetchExchangeRate}>
-            <Text style={styles.swapButtonText}>
-              Converter
-            </Text>
+          <TouchableOpacity style={[styles.convertButton, (!amount || loading) && styles.convertButtonDisabled]} onPress={fetchExchangeRate} disabled={!amount || loading} >
+
+            {loading ? (
+              <ActivityIndicator color="white" />
+
+            ) : (
+              <Text style={styles.swapButtonText}>
+                Converter
+              </Text>
+            )}
+
           </TouchableOpacity>
 
-          <ResultCard />
+          <ResultCard
+            exchangeRate={exchangeRate}
+            result={result}
+            fromCurrency={fromCurrency}
+            toCurrency={toCurrency}
+            currencies={currencies}
+          />
         </View>
       </ScrollView>
 
